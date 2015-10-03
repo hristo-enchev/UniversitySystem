@@ -1,0 +1,67 @@
+﻿@model UniversitySystem.ViewModel.Home.HomeIndexVM
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>University system</h1>
+</div>
+
+
+    <div class="center-block" style="width: 285px">
+    <h1>@Html.ValidationMessage("Error")</h1>
+        @using (Html.BeginForm(new { @class = "form-signin" }))
+        {
+            @Html.AntiForgeryToken()
+            <h2 class="form-signin-heading">Please sign in</h2>
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+           
+             <div class="form-group">
+                @Html.Label("Username", new { @class = "sr-only" })
+
+                    @Html.TextBoxFor(model => model.username, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.username)
+
+            </div>
+            <div class="form-group">
+                @Html.Label("Password ", new { @class = "sr-only"   })
+                
+                    @Html.PasswordFor(model => model.password, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.password)
+               
+            </div>
+            <div class="form-group">
+                @Html.Label("Log as ", new { @class = "sr-only" })
+            
+                    @Html.EnumDropDownListFor(model => model.usersEnum, new { @class= "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.usersEnum)
+               
+            </div>
+
+
+         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        }
+</div>
+
+
+
+
+
+@*<div class="center-block" style="width: 285px">
+
+    <form class="form-signin">
+        
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="remember-me"> Remember me
+            </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+
+</div>*@

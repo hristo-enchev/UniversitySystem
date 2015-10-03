@@ -1,0 +1,46 @@
+﻿@model UniversitySystem.ViewModel.TeacherVM.TeacherListTeachersVM
+@{
+    ViewBag.Title = "Teachers";
+}
+
+<h2>List teachers</h2>
+
+@Html.ActionLink("Add teacher", "CreateTeacher")
+@Html.ActionLink("Add title", "AddTitle", "Title")
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Subjects</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    @foreach (var item in Model.Teachers)
+    {
+        <tr>
+            <td>
+                @item.Title.Name
+            </td>
+            <td>
+                @item.FirstName
+            </td>
+            <td>
+                @item.LastName
+            </td>
+            <td>
+                @item.CourseSubject.Count()
+            </td>
+           
+            <td>
+                @Html.ActionLink("Add subject", "AddSubject", new { id = item.ID }) ||
+                @Html.ActionLink("Edit", "EditTeacher", new { id = item.ID })
+            </td>
+        </tr>
+    }
+
+
+
+</table>

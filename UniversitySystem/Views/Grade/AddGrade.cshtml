@@ -1,0 +1,40 @@
+﻿@model UniversitySystem.ViewModel.Grades.GradeAddGradeVM
+@{
+    ViewBag.Title = "AddGrade";
+}
+
+<h2>AddGrade</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>User</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.StudentID)
+        @Html.HiddenFor(model => model.SubjectID)
+        <div class="form-group">
+            @Html.Label("Grade :", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.GradeValue, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.GradeValue, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+<h1>@Html.ValidationMessage("Error")</h1>
+<div>
+    @Html.ActionLink("Back to List", "StudentsGrades" + "/" + Model.SubjectID)
+</div>
+
+
+
+

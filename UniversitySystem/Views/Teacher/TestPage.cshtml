@@ -1,0 +1,128 @@
+﻿
+
+
+
+
+
+
+
+
+
+
+
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#State").prop("disabled", true);
+
+        $("#Choose").change(function () {
+
+            if ($("#Choose").val() != "Select") {
+
+                var Options = {};
+
+                Options.url = "/Teacher/states";
+
+                Options.type = "POST";
+
+                Options.data = JSON.stringify({ Country: $("#Country").val() });
+
+                Options.datatype = "json";
+
+                Options.contentType = "application/json";
+
+                Options.success = function (StatesList) {
+
+                    $("#State").empty();
+                    $("#State1").empty();
+                    
+
+                    for (var i = 0; i < StatesList.length; i++) {
+                        $("#State").append("<option>" + StatesList[i].Text+ "</option>");
+                        $("#State1").append('<label> '+StatesList[i].Text +' </label><input name="subjectID" id="'+StatesList[i].Text+'" type="checkbox" value="'+StatesList[i].Value+'" '+StatesList[i].Selected+' ? "checked" : "") /> <br>');
+                    }
+
+                    $("#State").prop("disabled", false);
+
+                };
+
+                Options.error = function () { alert("Error in Getting States!!"); };
+
+                $.ajax(Options);
+
+            }
+
+            else {
+
+                $("#State").empty();
+
+                $("#State").prop("disabled", true);
+
+            }
+
+        });
+
+    });
+
+</script>
+
+
+
+@using (Html.BeginForm("Index", "Sample", FormMethod.Post))
+{
+
+    @Html.AntiForgeryToken()
+
+    <h4>Select Country & States</h4>
+
+    <hr />
+
+    @Html.ValidationSummary()
+
+    <div class="form-group">
+
+        @Html.Label("Choose:", new { @class = "col-md-2 control-label" })
+
+        <div class="col-md-10">
+
+            @Html.DropDownList("Choose", ViewData["test"] as SelectList, new { @class = "form-control" })
+
+        </div>
+
+    </div><br />
+
+    <div class="form-group">
+
+        @Html.Label("Select States:", new { @class = "col-md-2 control-label" })
+
+
+        <div class="col-md-10">
+           
+            <select id="State"></select>
+            <input id="State" type="checkbox" name="State" />
+
+        </div>
+        <h1>test</h1>
+        
+        <div class="col-md-10" id="State3">
+            <div id="State1">
+                   
+            </div>
+        </div>
+
+    </div>
+
+    <div class="form-group">
+
+        <div class="col-md-offset-2 col-md-10">
+
+            <input type="submit" class="btn btn-default" value="Submit" />
+
+        </div>
+
+    </div>
+   
+}

@@ -1,0 +1,35 @@
+﻿@model UniversitySystem.ViewModel.TeacherVM.TeacherIndexVM
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th style="text-align:center">Subject name</th>
+            <th style="text-align:center">Courses</th>
+            @*<th style="text-align:center">Students</th>*@
+            <th style="text-align:center">Actions</th>
+        </tr>
+    </thead>
+    
+    @foreach (var item in Model.Subjects)
+    {
+        <tr style="text-align:center">
+            <td> @item.Name </td>
+            <td style="width: 30%">
+                @foreach (var item2 in item.CourseSubject.Select(x => x.Course.Name))
+                {
+                    <span> @item2.ToString(), </span>
+                }
+            </td>
+            @*<td>@item.CourseSubject.Select( x => x.Course.Student.Count() ).FirstOrDefault()</td>*@
+            <td>
+                @Html.ActionLink("Show grades", "StudentsGrades", new { controller = "Grade", id = item.ID })
+                @*<td>@item.Note.Count() - notes @Html.ActionLink("Check/Edit", "Index", new { controller = "Note", id = item.ID })</td>*@
+            </td>
+        </tr>
+    }
+</table>

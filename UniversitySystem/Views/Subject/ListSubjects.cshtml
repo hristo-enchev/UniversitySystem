@@ -1,0 +1,42 @@
+﻿@model UniversitySystem.ViewModel.Subjects.SubjectListSubjectsVM
+@{
+    ViewBag.Title = "ListSubjects";
+}
+
+<h2>ListSubjects</h2>
+
+@Html.ActionLink("Add subject", "CreateSubject")
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Subject name</th>
+            <th>Courses</th>
+            <th>Students</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    @foreach (var item in Model.SubjectList)
+    {
+        <tr>
+            <td>
+                @item.Key.Name
+            </td>
+            <td>
+                @item.Key.CourseSubject.Count()
+            </td>
+            <td>
+                @item.Value
+            </td>
+
+            <td>
+                @Html.ActionLink("Edit", "EditSubject", new { id = item.Key.ID }) ||
+                @Html.ActionLink("List students", "ListStudentsBySubject", new { controller = "Student", id = item.Key.ID })||
+                @Html.ActionLink("Delete", "DeleteSubject", new { id = item.Key.ID })||
+                @Html.ActionLink("Export to Csv", "ExportSubjectListToCSV", new { id = item.Key.ID }) ||
+                @Html.ActionLink("Excel", "ExportSubjectListToExcel", new { id = item.Key.ID })
+            </td>
+        </tr>
+    }
+
+</table>

@@ -1,0 +1,92 @@
+﻿@model UniversitySystem.ViewModel.Grades.GradeStudentsGradesVM
+@{
+    ViewBag.Title = "View grades";
+}
+
+<h2>View grades</h2>
+@Html.HiddenFor(model => model.SubjectID)
+<div class="row">
+    <div class="col-lg-12">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Faculty number</th>
+                        <th>Fist name</th>
+                        <th>Last name</th>
+                        <th>Grade</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                @foreach (var item in Model.Students)
+                {
+                    <tr>
+                        <td> @item.FacultiNumber </td>
+                        <td> @item.FirstName </td>
+                        <td> @item.LastName </td>
+                        <td>
+                            @foreach (var grade in Model.Grades)
+                            {
+                                if (grade.StudentID == item.ID)
+                                {
+                                    <span>@grade.GradeValue</span>
+                                }
+                            }
+                        </td>
+                        <td>
+                            @using (Html.BeginForm())
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-test="@Model.SubjectID" data-whatever="@item.FirstName">Add grade to @item.FirstName</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+@Html.ActionLink("Export to Csv", "ExportSubjectListToCSV", new { id = Model.SubjectID })
+@Html.ActionLink("Export to Excel", "ExportSubjectListToExcel", new { id = Model.SubjectID })
+
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">New message</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Recipient:</label>
+                        <input type="text" class="form-control" id="recipient-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">Message:</label>
+                        <textarea class="form-control" id="message-text"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Send message</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $('#exampleModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var recipient = button.data('whatever')
+            var subjectID = button.data('test');
+            var studentID = button.data('whatever');
+            var modal = $(this)
+            modal.find('.modal-title').text('New message to ' + subjectID + studentID)
+            modal.find('.modal-body input').val(recipient)
+        });
+    });
+</script>

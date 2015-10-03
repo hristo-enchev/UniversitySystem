@@ -1,0 +1,50 @@
+﻿@model UniversitySystem.ViewModel.Administrator.AdministratorIndexVM
+@{
+    ViewBag.Title = "Admin panel";
+}
+
+<h2>Admin panel</h2>
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Group</th>
+            <th>In  group</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+        <tr>
+            <td>
+                Teachers
+            </td>
+            <td>
+               @Model.CountTeachers
+            </td>
+            <td>
+                @Html.ActionLink("View group", "ListTeachers","Teacher") 
+            </td>
+        </tr>
+    <tr>
+        <td>
+            Students
+        </td>
+        <td>
+            @Model.CountStudents
+        </td>
+        <td>
+            @Html.ActionLink("View group", "ListStudents", "Student")
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Admins
+        </td>
+        <td>
+            @Model.CountAdministrators
+        </td>
+        <td>
+            @Html.ActionLink("View group", "ListAdmins", "Administrator")
+        </td>
+    </tr>
+
+</table>

@@ -1,0 +1,41 @@
+﻿@model UniversitySystem.ViewModel.TeacherVM.TeacherCreateTeacherVM
+@{
+    ViewBag.Title = "Create teacher";
+}
+
+<h2>Create teacher</h2>
+
+@using (Html.BeginForm(FormMethod.Post))
+{
+    <h1>@Html.ValidationMessage("Error")</h1>
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.Label("First name:", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+        </div>
+        @Html.Label("Last name:", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+        </div>
+            @Html.Label("Title :", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.selectedValueID, Model.TitleList, "--- Select ---", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.selectedValueID, "", new { @class = "text-danger" })
+                @*@Html.DropDownListFor(model => model.TitleID, Model.TitleIDList, "-- Select --", new { @class = "dropdownlist" })
+                 @Html.ValidationMessageFor(model => model.TitleID, "This can't be blank")*@
+            </div>        
+
+        <div class="form-group">
+            <div style="margin-top: 20px;" class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+<div>
+    @Html.ActionLink("Back to List", "ListTeachers", "Teacher")
+</div>

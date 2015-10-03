@@ -1,0 +1,60 @@
+﻿@model UniversitySystem.ViewModel.CourseVM.CourseAddSubjectToCourseVM
+@{
+    ViewBag.Title = "AddSubjectToCourse";
+}
+
+<h2>AddSubjectToCourse</h2>
+
+@using (Html.BeginForm())
+    {
+    <h1>@Html.ValidationMessage("Error1")</h1>
+    @Html.AntiForgeryToken()
+    if (Model.Error != null)
+    {
+        <div class="alert alert-success" role="alert">...</div>
+
+    }
+
+        foreach (var subject in Model.List)
+        {
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            @Html.CheckBox(subject.Value, subject.Selected, new { @class = "checkbox", data_courseID = Model.CourseID, data_subjectID = subject.Value })
+                        </span>
+                        @Html.Label(subject.Text, new { @class = "form-control" })
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    }
+
+<div>
+    @Html.ActionLink("Back to List", "ListCourse")
+</div>
+
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+
+<script>
+    $(function () {
+        $("input[type=checkbox]").click(function () {
+            var subjectID = $(this).data("subjectid");
+            var courseID = $(this).data("courseid");
+            // var test = $(this).data("id");
+            //  var test2 = $()
+            $.ajax({
+
+                url : '@Url.Action("AddSubjectToCourse", "Course")' ,
+                type: 'POST',
+                datatype: 'json',
+                data: { subjectID: subjectID, courseID: courseID, isChecked: $(this).is(':checked') },
+                success: function (result) {
+                    location.reload();
+                }
+            });
+        });
+    });
+</script>

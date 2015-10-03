@@ -1,0 +1,44 @@
+﻿@model UniversitySystem.ViewModel.StudentVM.StudentDeactivatedVM
+@{
+    ViewBag.Title = "Deactivated";
+}
+
+<h2>Deactivated</h2>
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Faculty number</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Course</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    @foreach (var item in Model.Students)
+    {
+        <tr>
+            <td>
+                @item.FacultiNumber
+            </td>
+            <td>
+                @item.FirstName
+            </td>
+            <td>
+                @item.LastName
+            </td>
+
+            <td>
+                @item.Course.Name
+            </td>
+            <td>
+                @Html.ActionLink("Edit student", "EditStudent", new { id = item.ID })
+            </td>
+        </tr>
+    }
+
+
+
+</table>
+
+@Html.ActionLink("Back to list", "ListStudents")
