@@ -15,6 +15,8 @@ How to run
 ------------
 Open the application and run it.
 Seeded default administrator -  admin/password
+
 Default password of new teacher is "password" 
+
 Username of student is "stu" + his faculty number and password "password"
 
