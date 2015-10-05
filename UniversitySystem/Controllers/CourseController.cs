@@ -9,10 +9,10 @@ using UniversitySystem.ViewModel.CourseVM;
 
 namespace UniversitySystem.Controllers
 {
-    [UniversitySystem.Filter.AuthenticationFilter]
+    [Filter.AuthenticationFilter]
+    [Filter.AdministratorFilter]
     public class CourseController : Controller
     {
-        // GET: Course
         public ActionResult ListCourse(CourseListCourseVM model)
         {
             CourseRepository cRepo = new CourseRepository();
@@ -35,18 +35,19 @@ namespace UniversitySystem.Controllers
             {
                 return View();
             }
-            
+
             CourseRepository cRepo = new CourseRepository();
             Course checkFKNumberIsItUniqie = cRepo.GetAll(filter: ch => ch.FKNumber == model.FKNumber).FirstOrDefault();
             string digitCount = model.FKNumber.ToString();
             if (digitCount.Count() != 6)
             {
                 ModelState.AddModelError("Error", "Faculty number must be 6 digits" as string);
-                return View(model);  
-            }       
-            else if(checkFKNumberIsItUniqie != null){
+                return View(model);
+            }
+            else if (checkFKNumberIsItUniqie != null)
+            {
                 ModelState.AddModelError("Error", "There is course with this FK" as string);
-                return View(model);  
+                return View(model);
             }
 
             Course course = new Course();
@@ -56,6 +57,7 @@ namespace UniversitySystem.Controllers
 
             return RedirectToAction("ListCourse", "Course");
         }
+
         [HttpGet]
         public ActionResult Delete(int? id)
         {
@@ -79,13 +81,11 @@ namespace UniversitySystem.Controllers
         [HttpPost]
         public ActionResult Delete(CourseDeleteVM model)
         {
-
-            
-            CourseSubjectRepository csRepo = new CourseSubjectRepository();
-            CourseRepository cRepo = new CourseRepository();
+            CourseSubjectRepository courseSubjectRepository = new CourseSubjectRepository();
+            CourseRepository courseRepository = new CourseRepository();
 
             //var curSubj = csRepo.GetAll(filter: c => c.CourseID == model.Course.ID);
-            var courseCount = cRepo.GetAll(filter: c => c.ID == model.CourseID && c.Student.Count() > 0 ).FirstOrDefault();
+            var courseCount = courseRepository.GetAll(filter: c => c.ID == model.CourseID && c.Student.Count() > 0).FirstOrDefault();
 
             if (courseCount != null)
             {
@@ -94,10 +94,9 @@ namespace UniversitySystem.Controllers
             }
             else
             {
-                Course course = cRepo.GetByID(model.CourseID);
-                cRepo.Delete(course);
+                Course course = courseRepository.GetByID(model.CourseID);
+                courseRepository.Delete(course);
             }
-
 
             return RedirectToAction("ListCourse", "Course");
         }
@@ -107,12 +106,11 @@ namespace UniversitySystem.Controllers
         public ActionResult EditCourse(int? id)
         {
             CourseEditCourseVM model = new CourseEditCourseVM();
-
-            CourseRepository cRepo = new CourseRepository();
+            CourseRepository CourseRepository = new CourseRepository();
 
             Course course = new Course();
 
-            course = cRepo.GetByID(id.Value);
+            course = CourseRepository.GetByID(id.Value);
 
             model.Name = course.Name;
 
@@ -127,24 +125,24 @@ namespace UniversitySystem.Controllers
             {
                 return View();
             }
-            
-            CourseRepository cRepo = new CourseRepository();
-            Course course = cRepo.GetByID(model.CourseID);
+
+            CourseRepository courseRepository = new CourseRepository();
+            Course course = courseRepository.GetByID(model.CourseID);
 
             course.Name = model.Name;
 
-            cRepo.Save(course);
+            courseRepository.Save(course);
 
             return RedirectToAction("ListCourse", "Course");
         }
         public List<SelectListItem> ListForSubjectToCourse(int subjectID)
         {
-            SubjectRepository subjRepo = new SubjectRepository();
+            SubjectRepository subjectRepository = new SubjectRepository();
+            CourseRepository CourseRepository = new CourseRepository();
             List<SelectListItem> list = new List<SelectListItem>();
-            CourseRepository courseRepo = new CourseRepository();
 
-            var subjects = subjRepo.GetAll();
-            var course = courseRepo.GetByID(subjectID);
+            var subjects = subjectRepository.GetAll();
+            var course = CourseRepository.GetByID(subjectID);
             foreach (var item in subjects)
             {
                 if (course.CourseSubject.Any(c => c.SubjectID == item.ID))
@@ -158,7 +156,7 @@ namespace UniversitySystem.Controllers
             }
 
             return list;
-            
+
         }
 
         [HttpGet]
@@ -166,73 +164,67 @@ namespace UniversitySystem.Controllers
         {
             CourseAddSubjectToCourseVM model = new CourseAddSubjectToCourseVM();
 
-         
-
             model.CourseID = id.Value;
-
             model.List = ListForSubjectToCourse(id.Value);
+
             if (TempData["Error"] != null)
             {
                 ModelState.AddModelError("Error1", "Subject had teacher");
             }
+
             return View(model);
         }
+
         [HttpPost]
         public ActionResult AddSubjectToCourse(int subjectID, bool isChecked, int courseID)
         {
             CourseAddSubjectToCourseVM model = new CourseAddSubjectToCourseVM();
             UnitOfWork unitOfWork = new UnitOfWork();
-            SubjectRepository subjRepo = new SubjectRepository(unitOfWork);
-            CourseRepository courseRepo = new CourseRepository(unitOfWork);
-            CourseSubject cs = new CourseSubject();
-            CourseSubjectRepository csRepo = new CourseSubjectRepository(unitOfWork);
-            CourseSubject coursSubject = new CourseSubject();
-            UserRepository<Teacher> tRepo = new UserRepository<Teacher>();
+            SubjectRepository subjectRepository = new SubjectRepository(unitOfWork);
+            CourseRepository courseRepository = new CourseRepository(unitOfWork);
+            CourseSubject courseSubject = new CourseSubject();
+            CourseSubjectRepository courseSubjectRepository = new CourseSubjectRepository(unitOfWork);
+            UserRepository<Teacher> teacherRepository = new UserRepository<Teacher>();
 
             try
             {
                 if (isChecked == false)
                 {
-                    coursSubject = csRepo.GetAll(filter: c => c.SubjectID == subjectID && c.CourseID == courseID).FirstOrDefault();
+                    courseSubject = courseSubjectRepository.GetAll(filter: c => c.SubjectID == subjectID && c.CourseID == courseID).FirstOrDefault();
 
-                    Subject subject = subjRepo.GetByID(subjectID);
+                    Subject subject = subjectRepository.GetByID(subjectID);
+                    Course course = courseRepository.GetByID(courseID);
 
-                    Course course = courseRepo.GetByID(courseID);
+                    var teachers = teacherRepository.GetAll();
 
-                    var teachers = tRepo.GetAll();
-
-                    if (coursSubject.Teachers.Any())
+                    if (courseSubject.Teachers.Any())
                     {
                         TempData["Error"] = "Course contain students, teachers or subject";
-                        //return RedirectToAction("AddSubjectToCourse", "Course", new { id = courseID });
                         model.List = ListForSubjectToCourse(subjectID);
                         model.Error = "Subject contain teacher";
                         return View(model);
                     }
 
-                    csRepo.Delete(coursSubject);
+                    courseSubjectRepository.Delete(courseSubject);
                 }
                 else
                 {
-                    Course course = courseRepo.GetByID(courseID);
+                    Course course = courseRepository.GetByID(courseID);
 
-                    Subject sub = subjRepo.GetByID(subjectID);
+                    Subject sub = subjectRepository.GetByID(subjectID);
 
-
-
-                    coursSubject.Course = course;
-                    coursSubject.Subject = sub;
-                    csRepo.Save(coursSubject);
+                    courseSubject.Course = course;
+                    courseSubject.Subject = sub;
+                    courseSubjectRepository.Save(courseSubject);
                 }
                 unitOfWork.Commit();
             }
             catch (Exception)
             {
-
                 unitOfWork.RollBack();
             }
 
-            return RedirectToAction("AddSubjectToCourse","Course");
+            return RedirectToAction("AddSubjectToCourse", "Course");
         }
     }
 }

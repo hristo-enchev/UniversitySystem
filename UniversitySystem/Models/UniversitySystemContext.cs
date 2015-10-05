@@ -28,7 +28,11 @@ namespace UniversitySystem.Models
 
         public DbSet<UniversitySystem.Entities.Title> Title { get; set; }
 
-       // public DbSet<UniversitySystem.Entities.User> User { get; set; }
+        public DbSet<UniversitySystem.Entities.Info> Info { get; set; }
+
+        public DbSet<UniversitySystem.Entities.InfoImage> InfoImage { get; set; }
+
+        public DbSet<UniversitySystem.Entities.Keyword> Keyword { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

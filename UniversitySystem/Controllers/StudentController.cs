@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using System.Web.UI;
 using UniversitySystem.Entities;
@@ -12,10 +11,10 @@ using UniversitySystem.ViewModel.StudentVM;
 
 namespace UniversitySystem.Controllers
 {
-    [UniversitySystem.Filter.AuthenticationFilter]
+    [Filter.AuthenticationFilter]
+    [Filter.AdministratorFilter]
     public class StudentController : Controller
     {
-        // GET: Student
         public ActionResult ListStudents(int? id)
         {
             StudentListStudentsVM model = new StudentListStudentsVM();
@@ -29,7 +28,6 @@ namespace UniversitySystem.Controllers
                 model.Students = sRepo.GetAll(filter: s => s.CourseID == id.Value);
             }
 
-
             return View(model);
         }
 
@@ -40,13 +38,11 @@ namespace UniversitySystem.Controllers
             CourseRepository cRepo = new CourseRepository();
             List<SelectListItem> list = new List<SelectListItem>();
 
-
             if (id != null)
             {
                 var courses = cRepo.GetAll(filter: c => c.ID == id.Value).FirstOrDefault();
                 list.Add(new SelectListItem() { Text = courses.Name + " || " + courses.FKNumber, Value = courses.ID.ToString() });
             }
-
             else
             {
                 var courses = cRepo.GetAll();
@@ -62,7 +58,6 @@ namespace UniversitySystem.Controllers
         }
 
         [HttpPost]
-
         public ActionResult CreateStudent(StudentCreateStudentVM model, int? id)
         {
             Student student = new Student();
@@ -70,7 +65,7 @@ namespace UniversitySystem.Controllers
             UnitOfWork unitOfWork = new UnitOfWork();
             UserRepository<Student> sRepo = new UserRepository<Student>();
             CourseRepository courseRepo = new CourseRepository();
-           
+
             if (!ModelState.IsValid)
             {
                 List<SelectListItem> list = new List<SelectListItem>();
@@ -79,7 +74,6 @@ namespace UniversitySystem.Controllers
                     var courses = courseRepo.GetAll(filter: c => c.ID == id.Value).FirstOrDefault();
                     list.Add(new SelectListItem() { Text = courses.Name + " || " + courses.FKNumber, Value = courses.ID.ToString() });
                 }
-
                 else
                 {
                     var courses = courseRepo.GetAll();
@@ -93,8 +87,6 @@ namespace UniversitySystem.Controllers
 
                 return View(model);
             }
-    
-
 
             int courseID = Convert.ToInt32(model.selectedValueID);
             course = courseRepo.GetAll(filter: c => c.ID == courseID).FirstOrDefault();
@@ -104,7 +96,6 @@ namespace UniversitySystem.Controllers
 
             student.FirstName = model.FirstName;
             student.LastName = model.LastName;
-            
 
             if (fkNumberCount == null)
             {
@@ -115,10 +106,9 @@ namespace UniversitySystem.Controllers
                 student.FacultiNumber = (Convert.ToInt32(fkNumberCount.FacultiNumber) + 1).ToString();
             }
 
-
             student.CourseID = courseID;
             student.Active = true;
-            UniversitySystem.Hasher.Passphrase hash = UniversitySystem.Hasher.PasswordHasher.Hash("password");
+            Passphrase hash = PasswordHasher.Hash("password");
             student.Hash = hash.Hash;
             student.Salt = hash.Salt;
 
@@ -132,18 +122,14 @@ namespace UniversitySystem.Controllers
             return RedirectToAction("ListStudents", "Student");
         }
 
-
         [HttpGet]
         public ActionResult EditStudent(int? id)
         {
             StudentEditStudentVM model = new StudentEditStudentVM();
-
             UserRepository<Student> stuRepo = new UserRepository<Student>();
-
             CourseRepository cRepo = new CourseRepository();
 
             Student student = stuRepo.GetByID(id.Value);
-
 
             var courses = cRepo.GetAll();
 
@@ -155,7 +141,6 @@ namespace UniversitySystem.Controllers
                 {
                     list.Add(new SelectListItem() { Text = item.Name + " || " + item.FKNumber, Value = item.ID.ToString() });
                 }
-
             }
 
             model.StudentID = student.ID;
@@ -167,6 +152,7 @@ namespace UniversitySystem.Controllers
 
             return View(model);
         }
+
         [HttpPost]
         public ActionResult EditStudent(StudentEditStudentVM model)
         {
@@ -216,6 +202,7 @@ namespace UniversitySystem.Controllers
 
             return RedirectToAction("ListStudents", "Student");
         }
+
         [HttpGet]
         public ActionResult Deactivated()
         {
@@ -223,10 +210,11 @@ namespace UniversitySystem.Controllers
             UserRepository<Student> stuRepo = new UserRepository<Student>();
             model.Students = stuRepo.GetAll(filter: s => s.Active == false);
 
-
             return View(model);
         }
 
+        [OverrideActionFilters]
+        [Filter.StudentFilter]
         public ActionResult Index()
         {
             StudentIndexVM model = new StudentIndexVM();
@@ -235,35 +223,38 @@ namespace UniversitySystem.Controllers
             GradeRepository gradeRepo = new GradeRepository();
             UserRepository<Teacher> teacherRepo = new UserRepository<Teacher>();
 
-            Student student = stuRepo.GetByID(UniversitySystem.Models.AuthenticationManager.LoggedUser.ID);
-            
+            Student student = stuRepo.GetByID(Models.AuthenticationManager.LoggedUser.ID);
+
             model.FacultiNumber = student.FacultiNumber;
             model.FirstName = student.FirstName;
             model.LastName = student.LastName;
 
-            
-            Course course = courseRepo.GetAll(filter: x => x.CourseSubject.Any(c => c.Course.Student.Any(s => s.ID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID))).FirstOrDefault();
+            Course course = courseRepo.GetAll(filter: x => x.CourseSubject.Any(c => c.Course.Student.Any(s => s.ID == Models.AuthenticationManager.LoggedUser.ID))).FirstOrDefault();
 
             model.CourseName = course.Name;
 
-            model.Grades = gradeRepo.GetAll(filter: g => g.StudentID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID);
+            model.Grades = gradeRepo.GetAll(filter: g => g.StudentID == Models.AuthenticationManager.LoggedUser.ID);
 
             return View(model);
         }
+
+        [OverrideActionFilters]
+        [Filter.StudentFilter]
         [HttpGet]
         public ActionResult ChangePassword()
         {
             StudentChangePasswordVM model = new StudentChangePasswordVM();
-
             UserRepository<Student> stuRepo = new UserRepository<Student>();
 
-            Student student = stuRepo.GetByID(UniversitySystem.Models.AuthenticationManager.LoggedUser.ID);
+            Student student = stuRepo.GetByID(Models.AuthenticationManager.LoggedUser.ID);
 
             model.StudentID = student.ID;
 
             return View(model);
         }
 
+        [OverrideActionFilters]
+        [Filter.StudentFilter]
         [HttpPost]
         public ActionResult ChangePassword(StudentChangePasswordVM model)
         {
@@ -271,6 +262,7 @@ namespace UniversitySystem.Controllers
             {
                 return View();
             }
+
             if (model.NewPassword != model.NewPasswordRepeat)
             {
                 ModelState.AddModelError("Error", "New password dont match");
@@ -278,9 +270,7 @@ namespace UniversitySystem.Controllers
             }
 
             UserRepository<Student> stuRepo = new UserRepository<Student>();
-
             Student student = stuRepo.GetByID(model.StudentID);
-
             Passphrase hash = PasswordHasher.Hash(model.OldPassword);
 
             if (PasswordHasher.Equals(model.OldPassword, student.Salt, student.Hash))
@@ -291,7 +281,6 @@ namespace UniversitySystem.Controllers
                 student.Hash = hash2.Hash;
 
                 stuRepo.Save(student);
-                
             }
             else
             {
@@ -306,7 +295,6 @@ namespace UniversitySystem.Controllers
             StudentIndexVM model = new StudentIndexVM();
             GradeRepository gradeRepo = new GradeRepository();
             UserRepository<Student> studentRepo = new UserRepository<Student>();
-
             Student student = studentRepo.GetByID(id);
 
             model.Grades = gradeRepo.GetAll(filter: s => s.StudentID == id);
@@ -324,8 +312,6 @@ namespace UniversitySystem.Controllers
             }
 
             grid.DataSource = products;
-
-
             grid.DataBind();
 
             Response.ClearContent();
@@ -335,16 +321,12 @@ namespace UniversitySystem.Controllers
             HtmlTextWriter htw = new HtmlTextWriter(sw);
 
             grid.RenderControl(htw);
-
             Response.Write(sw.ToString());
-
             Response.End();
-
         }
+
         public void ExportSubjectListToCSV(int id)
         {
-
-
             StudentIndexVM model = new StudentIndexVM();
             GradeRepository gradeRepo = new GradeRepository();
             UserRepository<Student> studentRepo = new UserRepository<Student>();
@@ -352,46 +334,38 @@ namespace UniversitySystem.Controllers
             model.Grades = gradeRepo.GetAll(filter: s => s.StudentID == id);
             Student student = studentRepo.GetByID(id);
 
-
             StringWriter sw = new StringWriter();
 
             sw.WriteLine("\"Subject\",\"Grade\"");
 
             Response.ClearContent();
-            Response.AddHeader("content-disposition", "attachment;filename=" + student.FacultiNumber+ ".csv");
+            Response.AddHeader("content-disposition", "attachment;filename=" + student.FacultiNumber + ".csv");
             Response.ContentType = "text/csv";
 
             foreach (var item in model.Grades)
             {
                 sw.WriteLine(string.Format("\"{0}\",\"{1}\"",
                                            item.Subject.Name,
-                                           item.GradeValue
-                                           ));
+                                           item.GradeValue));
             }
 
             Response.Write(sw.ToString());
-
             Response.End();
-
         }
-
 
         public ActionResult ListStudentsBySubject(int id)
         {
             UserRepository<Student> stuRepo = new UserRepository<Student>();
             SubjectRepository subjectRepo = new SubjectRepository();
             StudentListStudentsBySubjectVM model = new StudentListStudentsBySubjectVM();
-
             Subject course = subjectRepo.GetByID(id);
 
-            var students = stuRepo.GetAll(filter: s => s.Course.CourseSubject.Any( c => c.SubjectID == id));
+            var students = stuRepo.GetAll(filter: s => s.Course.CourseSubject.Any(c => c.SubjectID == id));
 
             model.Students = students;
             model.SubjectName = course.Name;
-            
 
             return View(model);
         }
-
     }
 }

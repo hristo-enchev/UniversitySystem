@@ -55,18 +55,13 @@ namespace UniversitySystem.Controllers
 
             if (!ModelState.IsValid)
             {
-
                 model.TitleList = TeacherTitle();
 
                 return View(model);
             }
-         
 
             try
             {
-
-
-
                 teacher.Username = model.FirstName;
                 teacher.FirstName = model.FirstName;
                 teacher.LastName = model.LastName;
@@ -102,7 +97,7 @@ namespace UniversitySystem.Controllers
             TeacherAddSubjectVM model = new TeacherAddSubjectVM();
             CourseRepository cRepo = new CourseRepository();
             UserRepository<Teacher> teacherRepo = new UserRepository<Teacher>();
-            
+
             List<SelectListItem> list = new List<SelectListItem>();
 
             Teacher teacher = teacherRepo.GetByID(id.Value);
@@ -111,7 +106,7 @@ namespace UniversitySystem.Controllers
             model.FirstName = teacher.FirstName;
             model.LastName = teacher.LastName;
             model.TeacherID = teacher.ID;
-            
+
             var courses = cRepo.GetAll();
 
             foreach (var item in courses)
@@ -126,26 +121,21 @@ namespace UniversitySystem.Controllers
         public ActionResult AddSubject(int id, int[] subjectID, string Choose)
         {
             UnitOfWork unitOfWork = new UnitOfWork();
-
             CourseRepository courseRepo = new CourseRepository();
             CourseSubject cs = new CourseSubject();
             CourseSubjectRepository csRepo = new CourseSubjectRepository(unitOfWork);
-
             UserRepository<Teacher> teacherRepo = new UserRepository<Teacher>(unitOfWork);
-
             Teacher teacher = teacherRepo.GetAll(filter: t => t.ID == id).FirstOrDefault();
 
             int courseId = Convert.ToInt32(Choose);
 
-            var curSubj = csRepo.GetAll(filter: x => x.CourseID == courseId && x.Teachers.Any( t => t.ID == id));
+            var curSubj = csRepo.GetAll(filter: x => x.CourseID == courseId && x.Teachers.Any(t => t.ID == id));
 
             try
             {
                 foreach (var item in curSubj)
                 {
-
                     teacher.CourseSubject.Remove(item);
-
                 }
                 if (subjectID != null)
                 {
@@ -153,8 +143,7 @@ namespace UniversitySystem.Controllers
                     {
                         cs = csRepo.GetAll(filter: c => c.SubjectID == item && c.CourseID == courseId).FirstOrDefault();
                         teacher.CourseSubject.Add(cs);
-                       
-                    } 
+                    }
                 }
                 teacherRepo.Save(teacher);
                 unitOfWork.Commit();
@@ -164,22 +153,18 @@ namespace UniversitySystem.Controllers
                 unitOfWork.RollBack();
             }
 
-
             return RedirectToAction("ListTeachers", "Teacher");
         }
-    
+
 
         public JsonResult States(string Choose, int teacherID)
         {
-
             CourseRepository cRepo = new CourseRepository();
-
             CourseSubjectRepository csRepo = new CourseSubjectRepository();
 
             List<SelectListItem> StatesList = new List<SelectListItem>();
 
             int choose = Convert.ToInt32(Choose);
-
 
             var subjects = csRepo.GetAll(filter: s => s.CourseID == choose);
 
@@ -193,37 +178,9 @@ namespace UniversitySystem.Controllers
                 {
                     StatesList.Add(new SelectListItem() { Text = item.Subject.Name, Value = item.SubjectID.ToString(), Selected = false });
                 }
-                
             }
 
             return Json(StatesList, JsonRequestBehavior.AllowGet);
-
-        }
-        [HttpGet]
-        public ActionResult TestPage()
-        {
-            List<string> ListItems = new List<string>();
-
-            ListItems.Add("1");
-
-            ListItems.Add("2");
-
-            ListItems.Add("3");
-
-            ListItems.Add("4");
-
-            ListItems.Add("5");
-
-            SelectList Choose = new SelectList(ListItems);
-
-            ViewData["Choose"] = Choose;
-            return View();
-        }
-        [HttpPost]
-        public ActionResult TestPage(int? id)
-        {
-
-            return View();
         }
 
         public ActionResult Index()
@@ -235,9 +192,9 @@ namespace UniversitySystem.Controllers
 
             CourseSubjectRepository csRepo = new CourseSubjectRepository();
 
-           model.Subjects = subjRepo.GetAll(filter: s => s.CourseSubject.Any(c => c.Teachers.Any(t => t.ID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID)));
+            model.Subjects = subjRepo.GetAll(filter: s => s.CourseSubject.Any(c => c.Teachers.Any(t => t.ID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID)));
 
-           model.Courses = courseRepo.GetAll(filter: c => c.CourseSubject.Any(s => s.Teachers.Any(t => t.ID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID)));
+            model.Courses = courseRepo.GetAll(filter: c => c.CourseSubject.Any(s => s.Teachers.Any(t => t.ID == UniversitySystem.Models.AuthenticationManager.LoggedUser.ID)));
 
             return View(model);
         }
@@ -251,12 +208,10 @@ namespace UniversitySystem.Controllers
 
             Teacher teacher = teacherRepo.GetByID(id);
 
-
             var teacherTitle = titleRepo.GetByID(teacher.Title.ID);
 
             list.Add(new SelectListItem() { Text = teacherTitle.Name, Value = teacherTitle.ID.ToString() });
             var title = titleRepo.GetAll();
-
 
             foreach (var item in title)
             {
@@ -264,7 +219,7 @@ namespace UniversitySystem.Controllers
                 {
                     list.Add(new SelectListItem() { Text = item.Name, Value = item.ID.ToString() });
                 }
-                
+
             }
             model.FirstName = teacher.FirstName;
             model.LastName = teacher.LastName;
@@ -296,7 +251,6 @@ namespace UniversitySystem.Controllers
 
                 if (model.FirstName != teacher.FirstName || model.LastName != teacher.LastName || model.Active != teacher.Active || TitleId != teacher.Title.ID)
                 {
-
                     teacher.FirstName = model.FirstName;
                     teacher.LastName = model.LastName;
                     teacher.Username = model.FirstName;
@@ -311,10 +265,7 @@ namespace UniversitySystem.Controllers
             {
                 unitOfWork.RollBack();
             }
-            return RedirectToAction("ListTeachers","Teacher");
+            return RedirectToAction("ListTeachers", "Teacher");
         }
-
-
     }
-} 
-  
+}

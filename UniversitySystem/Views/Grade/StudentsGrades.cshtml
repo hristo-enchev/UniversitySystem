@@ -18,26 +18,19 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                @foreach (var item in Model.Students)
+                @foreach (var student in Model.Students)
                 {
                     <tr>
-                        <td> @item.FacultiNumber </td>
-                        <td> @item.FirstName </td>
-                        <td> @item.LastName </td>
+                        <td> @student.FacultiNumber </td>
+                        <td> @student.FirstName </td>
+                        <td> @student.LastName </td>
                         <td>
-                            @foreach (var grade in Model.Grades)
-                            {
-                                if (grade.StudentID == item.ID)
-                                {
-                                    <span>@grade.GradeValue</span>
-                                }
-                            }
+                            @(student.Grades.Count(x => x.SubjectID == Model.SubjectID).ToString() == "0" ? "" : student.Grades.Where(x => x.SubjectID == Model.SubjectID).Select(x => x.GradeValue).FirstOrDefault().ToString())
                         </td>
                         <td>
-                            @using (Html.BeginForm())
+                            @if (true)
                             {
-                                @Html.AntiForgeryToken()
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-test="@Model.SubjectID" data-whatever="@item.FirstName">Add grade to @item.FirstName</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-studentid="@student.ID" data-student="@(student.FirstName + " " + student.LastName)">Add grade</button>
                             }
                         </td>
                     </tr>
@@ -49,44 +42,91 @@
 @Html.ActionLink("Export to Csv", "ExportSubjectListToCSV", new { id = Model.SubjectID })
 @Html.ActionLink("Export to Excel", "ExportSubjectListToExcel", new { id = Model.SubjectID })
 
-<script src="~/Scripts/jquery-1.10.2.js"></script>
+<div style="margin-top:10px;">
+    @Html.ActionLink("Back", "Index", "Teacher")
+</div>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                <input id="studentid" type="hidden" />
+                <input id="subjectid" type="hidden" />
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">New message</h4>
+                <div id="exampleModalLabel"> <h4>Add grade to</h4> <h4 class="modal-title" style="font-weight: bold;"> </h4></div>
             </div>
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="recipient-name" class="control-label">Recipient:</label>
-                        <input type="text" class="form-control" id="recipient-name">
-                    </div>
-                    <div class="form-group">
-                        <label for="message-text" class="control-label">Message:</label>
-                        <textarea class="form-control" id="message-text"></textarea>
+                        <label class="control-label">Grade</label>
+                        <input id="grade" class="form-control">
+                        <div id="gradeError"></div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Send message</button>
+                <button type="button" class="btn btn-primary" id="send">Send message</button>
             </div>
         </div>
     </div>
 </div>
+
 <script>
-    $(function () {
-        $('#exampleModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var recipient = button.data('whatever')
-            var subjectID = button.data('test');
-            var studentID = button.data('whatever');
-            var modal = $(this)
-            modal.find('.modal-title').text('New message to ' + subjectID + studentID)
-            modal.find('.modal-body input').val(recipient)
-        });
+    $('#exampleModal').on('show.bs.modal', function (event) {
+        removeInputAndError();
+        var button = $(event.relatedTarget);
+        var student = button.data('student');
+        var modal = $(this);
+        var studentid = button.data("studentid");
+        modal.find('#studentid').val(studentid);
+        modal.find('.modal-title').text(student);
+    })
+    $("#send").on("click", function () {
+
+        var gradevalue = $('#grade').val();
+        var studentid = $('#studentid').val();
+        var subjectid = @Model.SubjectID;
+        if (gradevalue && studentid && subjectid && (gradevalue > 1 && gradevalue < 7)) {
+            var grade = { "gradevalue": gradevalue, "studentid": studentid, "subjectid" : subjectid };
+            var params = {
+                url: '@Url.Action("AddGradeToStudent", "Grade")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(grade),
+                success: function (data) {
+                    var result =  JSON.parse(data);
+
+                    if (result == true) {
+                        location.reload(true);
+                        removeInputAndError();
+                    }
+                    else {
+                        removeInputAndError();
+                        var h4 = $("<h4></h4>").text("This student already had grade");
+                        h4.css('color', 'red')
+                        h4.attr('id', 'gradeErrorMessage');
+                        h4.appendTo('#gradeError');
+                    }
+                },
+                error: function (result) {
+                    removeInputAndError();
+                    alert("Error");
+                }
+            };
+            $.ajax(params);
+        }
+        else {
+            removeInputAndError();
+            var h4 = $("<h4></h4>").text("Please add valid grade");
+            h4.css('color', 'red')
+            h4.attr('id', 'gradeErrorMessage');
+            h4.appendTo('#gradeError');
+        }
     });
+    function removeInputAndError(){
+        $('#gradeErrorMessage').remove();
+        $('#grade').val("");
+    }
 </script>

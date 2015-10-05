@@ -7,6 +7,7 @@
     <title>@ViewBag.Title</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -19,39 +20,48 @@
                 @if (UniversitySystem.Models.AuthenticationManager.LoggedUser != null)
                 {
                     @Html.ActionLink("Hello, " + UniversitySystem.Models.AuthenticationManager.LoggedUser.Username, "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                }
+                else
+                {
+                    @Html.ActionLink("University", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                }
+
+            </div>
+            <div class="navbar-collapse collapse">
+                @if (UniversitySystem.Models.AuthenticationManager.LoggedUser != null)
+                {
                     <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Logout", "Logout", "Home")</li>
                     </ul>
                 }
-                else{
-                    @Html.ActionLink("University", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-                }
-               
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                </ul>
                 @if (UniversitySystem.Models.AuthenticationManager.LoggedUser != null && UniversitySystem.Models.AuthenticationManager.LoggedUser.GetType().Name == "Administrator")
                 {
                     <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                    </ul>
+                    <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Administrators", "ListAdmins", "Administrator")</li>
                     </ul>
-                     <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Subjects", "ListSubjects", "Subject")</li>
                     </ul>
-                      <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Courses", "ListCourse", "Course")</li>
                     </ul>
-                       <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Teachers", "ListTeachers", "Teacher")</li>
                     </ul>
                     <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Students", "ListStudents", "Student")</li>
                     </ul>
-                     
                 }
-                
+                @if (UniversitySystem.Models.AuthenticationManager.LoggedUser != null)
+                {
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Info", "InfoPage", "Info")</li>
+                </ul>
+                }
+
             </div>
         </div>
     </div>
@@ -62,8 +72,6 @@
             <p> @DateTime.Now
         </footer>
     </div>
-
-    @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
 </body>

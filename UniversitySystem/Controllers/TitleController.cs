@@ -11,7 +11,6 @@ namespace UniversitySystem.Controllers
     [UniversitySystem.Filter.AuthenticationFilter]
     public class TitleController : Controller
     {
-
         [HttpGet]
         public ActionResult AddTitle()
         {
@@ -25,6 +24,7 @@ namespace UniversitySystem.Controllers
             {
                 return View();
             }
+
             TitleRepository titleRepo = new TitleRepository();
             Title title = new Title();
 

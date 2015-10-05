@@ -10,10 +10,10 @@ using UniversitySystem.Hasher;
 
 namespace UniversitySystem.Controllers
 {
-    [UniversitySystem.Filter.AuthenticationFilter]
+    [Filter.AuthenticationFilter]
+    [Filter.AdministratorFilter]
     public class AdministratorController : Controller
     {
-        // GET: Admin
         public ActionResult Index()
         {
             AdministratorIndexVM model = new AdministratorIndexVM();
@@ -24,9 +24,10 @@ namespace UniversitySystem.Controllers
             model.CountTeachers = tRepo.GetAll().Count();
             model.CountStudents = sRepo.GetAll().Count();
             model.CountAdministrators = aRepo.GetAll().Count();
- 
+
             return View(model);
         }
+
         [HttpGet]
         public ActionResult CreateAdmin()
         {
@@ -42,7 +43,7 @@ namespace UniversitySystem.Controllers
             }
             UserRepository<Administrator> aRepo = new UserRepository<Administrator>();
             Administrator admin = new Administrator();
-           
+
             Passphrase hash = PasswordHasher.Hash(model.Password);
 
             admin.FirstName = model.FirstName;
@@ -54,6 +55,7 @@ namespace UniversitySystem.Controllers
             aRepo.Save(admin);
             return RedirectToAction("ListAdmins", "Administrator");
         }
+
         public ActionResult ListAdmins()
         {
             AdminListAdminsVM model = new AdminListAdminsVM();

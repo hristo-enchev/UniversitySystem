@@ -49,11 +49,8 @@ namespace UniversitySystem.Services
             }
             catch (Exception)
             {
-                
                 return LoggedUser == null;
             }
-
-
 
             return LoggedUser == null;
         }

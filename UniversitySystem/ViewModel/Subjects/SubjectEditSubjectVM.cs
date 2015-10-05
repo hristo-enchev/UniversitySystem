@@ -14,5 +14,6 @@ namespace UniversitySystem.ViewModel.Subjects
         [Required(ErrorMessage = "Please enter subject name")]
         public string SubjectName { get; set; }
 
+        public string Action { get; set; }
     }
 }
