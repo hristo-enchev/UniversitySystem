@@ -1,0 +1,166 @@
+﻿@model UniversitySystem.ViewModel.Infos.InfoInfoPageVM
+@{
+    ViewBag.Title = "HelpList";
+}
+<div class="row">
+    <div class="pull-left">
+        @Html.ValidationSummary(true, string.Empty, new { @style = "color: red" })
+    </div>
+    @if (Model.CanBeEdited == true)
+    {
+        <div class="pull-right" style="margin-top: 18px;">
+            @Html.ActionLink("New article", "EditInfo", "Info", new { categoryId = @Model.CategoryID }, new { @class = "btn btn-primary" })
+        </div>
+    }
+</div>
+<div class="form-group">
+    @Html.HiddenFor(model => model.Info)
+    @Html.HiddenFor(model => model.Search)
+    <hr />
+    <div class="form-group">
+        @using (Html.BeginForm("InfoPage", "Info", FormMethod.Get))
+        {
+            @Html.HiddenFor(model => model.CategoryID)
+            <div class="form-inline">
+                <div class="form-group">
+                    <div class="form-group">
+                        @Html.Label("Find by Keyword:", new { @class = "control-label" })
+                        @Html.TextBoxFor(model => model.Search, new { @class = "form-control" })
+                    </div>
+                </div>
+                <input type="submit" value="Search" class="btn btn-primary" />
+                <input type="reset" class="btn btn-default" value="Clear Filter" onclick="location.href='@Url.Action("InfoPage", "Info")'" />
+            </div>
+        }
+    </div>
+    <section>
+        @if (Model.Info.Count() <= 0)
+        {
+            <div class="alert alert-info">
+                No results found
+            </div>
+        }
+        else
+        {
+            foreach (var info in Model.Info)
+            {
+                <div class="row info-article collapse-group">
+                    <header class="row">
+                        <h3 class="pull-left">@info.Title</h3>
+                        <div class="pull-right">
+                            @if (Model.CanBeEdited == true)
+                            {
+                                @Html.ActionLink("Edit", "EditInfo", new { info.ID, categoryId = Model.CategoryID })
+                                <a href="#" data-toggle="modal" data-target="#modal-delete-confirmation" data-url="/Info/DeleteInfo/@info.ID" data-additionalinfo="@info.Title">
+                                    Delete
+                                </a>
+                            }
+                        </div>
+                    </header>
+                    <div class="row collapse-group">
+                        <p class="collapse info-article-text">
+                            @Html.Raw(info.Content)
+                        </p>
+                        <div class="collapse">
+                            @foreach (var image in info.Images)
+                            {
+                                <div style="float:left; margin-left:15px; text-align:center;">
+                                    <input type="image" src="~/Content/Files/@info.Title/@image.Name" class="infolist-images" data-toggle="modal" onclick="modelimage('/Content/Files/@info.Title/@image.Name')" data-target=".bs-example-modal-lg">
+                                    <h6>@image.Name</h6>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <p> <a class="btnshow" id="@info.ID" href="#">Show text</a> </p>
+
+                    @if (info.FileName != null)
+                    {
+                        <div>
+                            <a target="_blank" href="~/Content/Files/@info.Title/@info.FileName">@info.FileName</a>
+                        </div>
+                    }
+                    @if (info.Keywords.Count() > 0)
+                    {
+                        <em>
+                            <span>Keywords: @string.Join(", ", info.Keywords.OrderBy(o => o.Value).Select(x => x.Value)) </span>
+                        </em>
+                    }
+                    <hr />
+                </div>
+            }
+        }
+    </section>
+</div>
+
+<div class="modal fade" id="modal-delete-confirmation" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Delete Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="additional-info"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <a href="#" class="btn btn-danger" id="delete-confirm">
+                    <i class="fa fa-trash-o"></i>
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content row" id="imageshow">
+            <button type="button" class="close info-image-modal-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Close X</span></button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    $('#modal-delete-confirmation').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var url = button.data('url');
+        var additionalInfo = button.data('additionalinfo');
+
+        $('#delete-confirm').attr('href', url);
+        $('#additional-info').html(additionalInfo);
+    })
+
+    $('.row .btnshow').on('click', function (e) {
+        e.preventDefault();
+        var $this = $(this);
+        var $collapse = $this.closest('.collapse-group').find('.collapse');
+        $collapse.collapse('toggle');
+        if (document.getElementById(this.id).innerHTML == "Show text") {
+            document.getElementById(this.id).innerHTML = "Hide text";
+        }
+        else {
+            document.getElementById(this.id).innerHTML = "Show text"
+        }
+    });
+
+    function modelimage(imagepath) {
+        var imageshow = document.getElementById('imageshow');
+        var check = document.getElementById('image');
+        if (check != null) {
+            check.parentNode.removeChild(check);
+        }
+
+        var img = document.createElement('img');
+
+        img.src = imagepath;
+        img.className = 'info-image-modal';
+        img.id = 'image';
+        img.setAttribute('style', 'no-repeat center center');
+
+        imageshow.appendChild(img);
+    }
+
+</script>

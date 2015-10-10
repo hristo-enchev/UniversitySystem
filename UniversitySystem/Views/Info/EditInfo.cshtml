@@ -1,0 +1,290 @@
+﻿@model UniversitySystem.ViewModel.Infos.InfoEditInfoVM
+
+@if (Model.ID == 0)
+{
+    <h3>Create</h3>
+}
+else
+{
+    <h3>Edit</h3>
+}
+<ul style="color:red" id="errormessage"></ul>
+@Html.ValidationSummary(string.Empty, new { @style = "color: red" })
+<hr />
+<div class="center-block">
+    <h1>@Html.ValidationMessage("Error")</h1>
+
+    @using (Html.BeginForm("EditInfo", "Info", FormMethod.Post, new { id = "form", enctype = "multipart/form-data" }))
+    {
+        @Html.HiddenFor(model => model.ID)
+        @Html.HiddenFor(model => model.FilePath)
+        @Html.HiddenFor(model => model.InfoImages)
+        <div class="row">
+            <div class="col-md-4 col-sm-4">
+                @Html.Label("Title")
+                @Html.TextBoxFor(model => model.Title, new { @class = "form-control", @id = "title" })
+            </div>
+            <div class="col-md-4 col-sm-4">
+                @Html.Label("Keywords")
+                <label style="display:inline-block;color:cornflowerblue;" title='Keywords must be separated with ","'>
+                    <i class="fa fa-info-circle"></i>
+                </label>
+                @Html.TextBoxFor(model => model.KeywordsInput, new { @class = "form-control" })
+            </div>
+
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div id="filedelete">
+                            @if (Model.FileName != null)
+                            {
+                                @Html.HiddenFor(model => model.FileName)
+                                <label>File name: @Model.FileName </label>
+                                <a href="#" data-toggle="modal" data-target="#modal-delete-confirmation" data-additionalinfo="@Model.FileName">
+                                    <i class="fa fa-trash-o"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                @Html.Label("Upload file")
+                            }
+                        </div>
+                        <span class="btn btn-default btn-file">
+                            <!--  By name="uploadFile" we found and save the file in the service  -->
+                            Upload file... <input type="file" id="uploadFile" name="@(UniversitySystem.ViewModel.Infos.InfoEditInfoVM.FileType.uploadFile)" accept="application/pdf" />
+                        </span>
+                        <output id="list"></output>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Content")
+            @Html.TextAreaFor(model => model.Content, new { @class = "textArea-fullwidth form-control", @id = "content" })
+        </div>
+        <div>
+            <div class="info-edit-image-container">
+                @foreach (var image in Model.InfoImages)
+                {
+                    <div class="info-edit-image-holder" id='image-@image.ID'>
+                        <h5>@image.Name</h5>
+                        <img class="info-edit-delete-image" src="~/Content/Files/@Model.Title/@image.Name" />
+                        <a> </a>
+                        <a href="#" data-toggle="modal" data-target="#modal-delete-confirmation" data-imageid="@image.ID" ; data-additionalinfo="@image.Name" id="image" class="btn-link">X</a>
+                    </div>
+                }
+                <div id="inputContainer" class="clearfix">
+                    <div class="info-edit-image-holder">
+                        <h5>Upload image</h5>
+                        <span style="background-image: url(../../Content/defaultUploadImage.png); background-size: 100% 100%;" class="btn btn-default btn-file info-upload-image">
+                            <input type="file" name="@(UniversitySystem.ViewModel.Infos.InfoEditInfoVM.FileType.uploadImage)" id="uploadImage" class="input-image" accept="image/*" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row" style="margin-top:13px;">
+            <input type="submit" value="Save" class="btn btn-default" /> |
+            <i class="fa fa-arrow-left"></i>
+            @Html.ActionLink("Back to list", "InfoPage")
+        </div>
+    }
+</div>
+
+
+<div class="modal fade" id="modal-delete-confirmation" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Delete Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to <b> permanently </b> delete <strong id="additional-info"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <a data-dismiss="modal" class="btn btn-danger" id="delete-confirm">
+                    <i class="fa fa-trash-o"></i>
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (){
+        var form = document.getElementById('form');
+        form.addEventListener('submit',validateTitle, false);
+        var file = document.getElementById('uploadImage');
+        var indexer = 2;
+        var container = document.getElementById('inputContainer');
+        file.addEventListener("change", onChangeAddInput, false);
+
+        function onChangeAddInput(evt) {
+
+            if(evt.target.files.length === 0)
+            {
+                return;
+            }
+
+            evt.target.removeEventListener("change", onChangeAddInput, false);
+
+            var getFile = evt.target.files;
+            var file = 0;
+            for (var i = 0, f; f = getFile[i]; i++){
+                file = f;
+            }
+
+            var fileExtension = file.name.substr((~-file.name.lastIndexOf(".") >>> 0) + 2);
+            if ((fileExtension == "jpg" || fileExtension == "png" || fileExtension == "bmp") && file.size < 1048576/*1MB*/)
+            {
+                document.getElementById('errormessage').innerHTML = '';
+                evt.target.parentElement.setAttribute('style', 'background-image: url('+URL.createObjectURL(file)+'); background-size: 100% 100%;');
+                evt.target.parentElement.parentElement.children[0].innerHTML = file.name;
+                evt.target.onclick = function (e) { e.preventDefault(); };
+            }
+            else {
+                document.getElementById('errormessage').innerHTML = '<li> Unsupported image, please upload another (.jpg, .png, .bmp, max size: 1 MB)</li>';
+                var parentDiv = evt.target.parentElement.parentElement;
+                parentDiv.parentNode.removeChild(parentDiv);
+            }
+
+            var newDiv = document.createElement('div');
+            var newSpan = document.createElement('span');
+            var h5 = document.createElement('h5');
+            var innerInput = document.createElement('input');
+
+            innerInput.type = "file";
+            innerInput.name = '@(UniversitySystem.ViewModel.Infos.InfoEditInfoVM.FileType.uploadImage)';
+            innerInput.className = 'input-image';
+            innerInput.accept = 'image/*';
+            innerInput.addEventListener("change", onChangeAddInput, false);
+
+            var a = document.createElement('a');
+            a.innerHTML = 'X';
+            a.addEventListener('click', onClickRemoveInput, false);
+            evt.target.parentNode.parentElement.appendChild(a);
+            a.classList.add('btn-link');
+
+            newDiv.className = 'info-edit-image-holder';
+            newSpan.className = 'btn btn-default btn-file info-edit-delete-image info-new-span';
+            newSpan.setAttribute('style', 'background-image: url(../../Content/defaultUploadImage.png)');
+            h5.innerText = 'Upload image';
+            h5.textContent = 'Upload image';
+
+            newSpan.appendChild(innerInput);
+            newDiv.appendChild(h5);
+            newDiv.appendChild(newSpan);
+
+            document.getElementById('inputContainer').appendChild(newDiv);
+        }
+
+        function onClickRemoveInput(evt) {
+
+            var d = evt.target.parentNode;
+            d.parentNode.removeChild(d);
+        }
+
+        function deletefile(id) {
+            //var imageid = $('#txt_name').val();;
+            var hrhelpid = { "infoid" : @Model.ID , "imageid" : id}
+            //alert(imageid);
+            var params = {
+                url: '@Url.Action("DeleteFile", "Info")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(hrhelpid),
+                success: function (data) {
+                   // data = JSON.parse(data);
+                    if (data == "file") {
+                        var elem = document.getElementById("filedelete");
+                        elem.innerHTML = '<label for="Upload_file">Upload file</label>';
+                    }
+                    if(data == "image"){
+                        var elem = document.getElementById("image-" + id);
+                        elem.parentNode.removeChild(elem);
+                    }
+                }
+            };
+            $.ajax(params);
+        }
+
+        $('#modal-delete-confirmation').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var additionalInfo = button.data('additionalinfo');
+            $('#additional-info').html(additionalInfo);
+
+            var imageid = button.data('imageid');
+            var elem = document.getElementById('delete-confirm');
+            elem.onclick = function() { deletefile(imageid); };
+        })
+
+        function handleFileSelect(evt) {
+            var uploadFile = evt.target.files; // FileList object
+            var output = [];
+            for (var i = 0, f; f = uploadFile[i]; i++) {
+                output.push('<li><strong>', f.name, '</strong> ',
+                            ((f.size/1024)/1024).toFixed(2), ' MB', '</li>');
+
+                var fileExtension = f.name.substr((~-f.name.lastIndexOf(".") >>> 0) + 2);
+                if (fileExtension == "pdf" || fileExtension == "doc" || fileExtension == "docx" || fileExtension == "xls" || fileExtension == "xlsx")
+                {
+                    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+                    document.getElementById('errormessage').innerHTML = '';
+                }
+                else {
+                    message = '<li> Unsupported file type, please upload another (.pdf, .doc, .docx, .xls, .xlsx) </li>';
+                    clearfileinput(message);
+                }
+            }
+        }
+        function clearfileinput(message) {
+            document.getElementById('errormessage').innerHTML = message;
+            document.getElementById('list').innerHTML = '';
+
+            var oldInput = document.getElementById('@(UniversitySystem.ViewModel.Infos.InfoEditInfoVM.FileType.uploadFile)');
+            var newInput = document.createElement("input");
+
+            newInput.type = "file";
+            newInput.id = 'uploadFile';
+            newInput.name = '@(UniversitySystem.ViewModel.Infos.InfoEditInfoVM.FileType.uploadFile)';
+            newInput.accept = 'application/pdf';
+            newInput.addEventListener('change', handleFileSelect, false);
+            oldInput.parentNode.replaceChild(newInput, oldInput);
+        }
+
+        function validateTitle(evt) {
+            var title = document.getElementById('title').value;
+            var content = document.getElementById('content').value;
+            if (!title || !content) {
+                document.getElementById('errormessage').innerHTML = "<li> Empty Title or Content </li>";
+                evt.preventDefault();
+                return false;
+            }
+            var titleName = { "title" : title, "id" : @Model.ID}
+            var params = {
+                url: '@Url.Action("ValidateHrHelpTitle", "HrHelp")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(titleName),
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data == false) {
+                        document.getElementById('errormessage').innerHTML = "<li> Info with same name exist </li>";
+                        evt.preventDefault();
+                        return false;
+                    }
+                }
+            };
+            var ajax = new AjaxRequest(params);
+            ajax.send();
+        }
+
+        document.getElementById('uploadFile').addEventListener('change', handleFileSelect, false);
+    })();
+</script>
