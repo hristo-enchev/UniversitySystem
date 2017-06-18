@@ -7,7 +7,7 @@
 What exactly does this project ? 
 ###
  
-This project had been created with educational purposes and representation of skills. It is fully functional.
+This project was created with educational purposes and representation of skills. It is fully functional.
 It is a ASP.NET MVC5 application using Entity Framework Code First and LINQ expressions which implements several design 
 patterns(Unit of work, Repository, MVC). 
 
